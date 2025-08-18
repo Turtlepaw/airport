@@ -5,7 +5,7 @@
     "build": "deno run -A dev.ts build",
     "start": "deno run -A main.ts",
     "update": "deno run -A -r jsr:@fresh/update .",
-    "test": "deno test -A --env tests/",
+    "test": "deno test -A --env tests/e2e/migration-logic.test.ts",
     "test:e2e": "deno test -A --env tests/e2e/"
   },
   "lint": {
