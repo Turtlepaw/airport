@@ -10,6 +10,27 @@ export interface TestSession {
   cookies: string[];
 }
 
+// API Response interfaces
+export interface MigrationCreateResponse {
+  success: boolean;
+  did: string;
+  handle: string;
+}
+
+export interface MigrationStatusResponse {
+  ready: boolean;
+  step?: string;
+}
+
+export interface MigrationStepResponse {
+  success: boolean;
+}
+
+export interface MigrationFinalizeResponse {
+  completed: boolean;
+  nextStep: string | null;
+}
+
 /**
  * Test client for interacting with the Airport application APIs
  */
@@ -219,6 +240,14 @@ export async function safeJsonParse(response: Response): Promise<unknown> {
   } catch {
     return { error: "Invalid JSON response", body: text };
   }
+}
+
+/**
+ * Helper function to parse JSON response safely with type assertion
+ */
+export async function safeJsonParseTyped<T>(response: Response): Promise<T> {
+  const result = await safeJsonParse(response);
+  return result as T;
 }
 
 /**

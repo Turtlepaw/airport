@@ -21,7 +21,11 @@ import {
 import {
   AirportTestClient,
   assertSuccessResponse,
-  safeJsonParse,
+  MigrationCreateResponse,
+  MigrationFinalizeResponse,
+  MigrationStatusResponse,
+  MigrationStepResponse,
+  safeJsonParseTyped,
   TestSession,
   waitForCondition,
 } from "../utils/api-client.ts";
@@ -40,6 +44,8 @@ const TEST_CONFIG = {
  */
 let testEnv: TestEnvironment;
 let client: AirportTestClient;
+let sourceAccount: TestAccount;
+let targetAccount: TestAccount;
 
 describe("Airport E2E Migration Tests", () => {
   beforeAll(async () => {
@@ -52,8 +58,6 @@ describe("Airport E2E Migration Tests", () => {
   });
 
   describe("Complete Migration Flow", () => {
-    let sourceAccount: TestAccount;
-    let targetAccount: TestAccount;
     let sourceSession: TestSession;
     let migrationSession: TestSession;
 
@@ -105,7 +109,9 @@ describe("Airport E2E Migration Tests", () => {
 
       assertSuccessResponse(response, "Failed to create migration account");
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationCreateResponse>(
+        response,
+      );
       assertEquals(result.success, true);
       assertExists(result.did);
       assertExists(result.handle);
@@ -127,7 +133,9 @@ describe("Airport E2E Migration Tests", () => {
       const response = await client.checkMigrationStatus(migrationSession, "1");
       assertSuccessResponse(response);
 
-      const status = await safeJsonParse(response);
+      const status = await safeJsonParseTyped<MigrationStatusResponse>(
+        response,
+      );
       assertEquals(status.ready, true);
 
       console.log("✓ Step 1 (account creation) marked as ready");
@@ -137,7 +145,7 @@ describe("Airport E2E Migration Tests", () => {
       const response = await client.migratePreferences(migrationSession);
       assertSuccessResponse(response, "Failed to migrate preferences");
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationStepResponse>(response);
       assertEquals(result.success, true);
 
       console.log("✓ User preferences migrated successfully");
@@ -147,7 +155,7 @@ describe("Airport E2E Migration Tests", () => {
       const response = await client.migrateRepository(migrationSession);
       assertSuccessResponse(response, "Failed to migrate repository");
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationStepResponse>(response);
       assertEquals(result.success, true);
 
       console.log("✓ Repository data migrated successfully");
@@ -157,7 +165,7 @@ describe("Airport E2E Migration Tests", () => {
       const response = await client.migrateBlobs(migrationSession);
       assertSuccessResponse(response, "Failed to migrate blobs");
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationStepResponse>(response);
       assertEquals(result.success, true);
 
       console.log("✓ Blobs and media migrated successfully");
@@ -171,7 +179,7 @@ describe("Airport E2E Migration Tests", () => {
             migrationSession,
             "2",
           );
-          return safeJsonParse(response);
+          return safeJsonParseTyped<MigrationStatusResponse>(response);
         },
         (status) => status.ready === true,
         {
@@ -192,7 +200,7 @@ describe("Airport E2E Migration Tests", () => {
             migrationSession,
             "3",
           );
-          return safeJsonParse(response);
+          return safeJsonParseTyped<MigrationStatusResponse>(response);
         },
         (status) => status.ready === true,
         {
@@ -209,7 +217,7 @@ describe("Airport E2E Migration Tests", () => {
       const response = await client.finalizeMigration(migrationSession);
       assertSuccessResponse(response, "Failed to finalize migration");
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationStepResponse>(response);
       assertEquals(result.success, true);
 
       console.log("✓ Migration finalized successfully");
@@ -223,7 +231,7 @@ describe("Airport E2E Migration Tests", () => {
             migrationSession,
             "4",
           );
-          return safeJsonParse(response);
+          return safeJsonParseTyped<MigrationStatusResponse>(response);
         },
         (status) => status.ready === true,
         {
@@ -240,7 +248,9 @@ describe("Airport E2E Migration Tests", () => {
       const response = await client.getNextMigrationStep(migrationSession);
       assertSuccessResponse(response);
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationFinalizeResponse>(
+        response,
+      );
       assertEquals(result.completed, true);
       assertEquals(result.nextStep, null);
 
@@ -300,7 +310,9 @@ describe("Airport E2E Migration Tests", () => {
         "Failed to create reverse migration account",
       );
 
-      const result = await safeJsonParse(response);
+      const result = await safeJsonParseTyped<MigrationCreateResponse>(
+        response,
+      );
       assertEquals(result.success, true);
 
       const cookies = client.extractCookies(response);
@@ -338,7 +350,7 @@ describe("Airport E2E Migration Tests", () => {
             reverseSession,
             "2",
           );
-          return safeJsonParse(response);
+          return safeJsonParseTyped<MigrationStatusResponse>(response);
         },
         (status) => status.ready === true,
         {
@@ -355,7 +367,7 @@ describe("Airport E2E Migration Tests", () => {
             reverseSession,
             "3",
           );
-          return safeJsonParse(response);
+          return safeJsonParseTyped<MigrationStatusResponse>(response);
         },
         (status) => status.ready === true,
         {
