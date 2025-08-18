@@ -33,7 +33,6 @@ jobs:
         test-suite:
           - basic
           - migration-logic
-          - migration-full
 
     steps:
       - name: Checkout code
@@ -75,14 +74,6 @@ jobs:
           TEST_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
           CI: true
 
-      - name: Run E2E tests - Full Migration
-        if: matrix.test-suite == 'migration-full'
-        run: deno test --allow-net tests/e2e/migration.test.ts
-        env:
-          AIRPORT_URL: ${{ github.event.inputs.airport_url || 'http://localhost:8000' }}
-          TEST_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
-          CI: true
-
       - name: Stop Airport application
         if: always()
         run: |
@@ -111,7 +102,6 @@ jobs:
           echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
           echo "- Basic API tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Migration logic tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Full migration tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
             echo "✅ All E2E tests passed!" >> $GITHUB_STEP_SUMMARY

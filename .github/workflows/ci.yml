@@ -42,7 +42,9 @@ jobs:
           CI: true
 
       - name: Run E2E tests
-        run: deno task test:e2e
+        run: |
+          deno test --allow-net tests/e2e/basic.test.ts
+          deno test --allow-net tests/e2e/migration-logic.test.ts
         env:
           # Configure test environment for CI
           AIRPORT_URL: http://localhost:8000

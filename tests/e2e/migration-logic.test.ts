@@ -77,8 +77,14 @@ class MockMigrationTracker {
   }
 
   getDataIntegrity(): boolean {
-    const originalData = this.getData("originalData") as Record<string, unknown>;
-    const migratedData = this.getData("migratedData") as Record<string, unknown>;
+    const originalData = this.getData("originalData") as Record<
+      string,
+      unknown
+    >;
+    const migratedData = this.getData("migratedData") as Record<
+      string,
+      unknown
+    >;
 
     if (!originalData || !migratedData) {
       return false;
@@ -290,10 +296,12 @@ Deno.test({
     const migratedData = {
       userPrefs: client["migrationTracker"].getData("migratedPrefs"),
       postCount:
-        (client["migrationTracker"].getData("migratedRepo") as SourceRepository)?.postCount ||
+        (client["migrationTracker"].getData("migratedRepo") as SourceRepository)
+          ?.postCount ||
         originalData.postCount,
       blobCount:
-        (client["migrationTracker"].getData("migratedBlobs") as SourceBlobs)?.blobCount ||
+        (client["migrationTracker"].getData("migratedBlobs") as SourceBlobs)
+          ?.blobCount ||
         originalData.blobCount,
     };
     client["migrationTracker"].setData("migratedData", migratedData);
@@ -369,7 +377,10 @@ Deno.test({
     client["migrationTracker"].setData("originalData", originalData);
 
     await client.migratePreferences(originalData.userPrefs);
-    await client.migrateRepository({ postCount: originalData.postCount, posts: [] });
+    await client.migrateRepository({
+      postCount: originalData.postCount,
+      posts: [],
+    });
     await client.migrateBlobs({ blobCount: originalData.blobCount, blobs: [] });
 
     client["migrationTracker"].setData("migratedData", originalData);
@@ -394,7 +405,10 @@ Deno.test({
     client["migrationTracker"].setData("originalData", originalData);
 
     await client.migratePreferences(originalData.userPrefs);
-    await client.migrateRepository({ postCount: originalData.postCount, posts: [] });
+    await client.migrateRepository({
+      postCount: originalData.postCount,
+      posts: [],
+    });
     await client.migrateBlobs({ blobCount: originalData.blobCount, blobs: [] });
 
     client["migrationTracker"].setData("migratedData", originalData);
