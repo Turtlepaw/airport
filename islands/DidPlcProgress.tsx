@@ -7,6 +7,11 @@ interface PlcUpdateStep {
   error?: string;
 }
 
+interface KeyData {
+  publicKeyDid: string;
+  privateKeyHex: string;
+}
+
 // Content chunks for the description
 const contentChunks = [
   {
@@ -158,10 +163,10 @@ export default function PlcUpdateProgress() {
     { name: "Complete PLC update", status: "pending" },
   ]);
   const [generatedKey, setGeneratedKey] = useState<string>("");
-  const [keyJson, setKeyJson] = useState<any>(null);
+  const [keyJson, setKeyJson] = useState<KeyData | null>(null);
   const [emailToken, setEmailToken] = useState<string>("");
-  const [updateResult, setUpdateResult] = useState<string>("");
-  const [showDownload, setShowDownload] = useState(false);
+  const [_updateResult, _setUpdateResult] = useState<string>("");
+  const [_showDownload, _setShowDownload] = useState(false);
   const [hasDownloadedKey, setHasDownloadedKey] = useState(false);
   const [downloadedKeyId, setDownloadedKeyId] = useState<string | null>(null);
 
@@ -381,7 +386,7 @@ export default function PlcUpdateProgress() {
 
       // Only proceed if we have a successful response
       console.log("Update completed successfully!");
-      setUpdateResult("PLC update completed successfully!");
+      _setUpdateResult("PLC update completed successfully!");
 
       // Add a delay before marking steps as completed for better UX
       updateStepStatus(2, "verifying");
@@ -422,7 +427,7 @@ export default function PlcUpdateProgress() {
         error instanceof Error ? error.message : String(error),
       );
       updateStepStatus(2, "pending"); // Reset the final step
-      setUpdateResult(error instanceof Error ? error.message : String(error));
+      _setUpdateResult(error instanceof Error ? error.message : String(error));
 
       // If token is invalid, we should clear it so user can try again
       if (
@@ -478,7 +483,7 @@ export default function PlcUpdateProgress() {
   const handleGenerateKey = async () => {
     console.log("=== Generate Key Debug ===");
     updateStepStatus(0, "in-progress");
-    setShowDownload(false);
+    _setShowDownload(false);
     setKeyJson(null);
     setGeneratedKey("");
     setHasDownloadedKey(false);
@@ -516,7 +521,7 @@ export default function PlcUpdateProgress() {
 
       setGeneratedKey(data.publicKeyDid);
       setKeyJson(data);
-      setShowDownload(true);
+      _setShowDownload(true);
       updateStepStatus(0, "completed");
     } catch (error) {
       console.error("Key generation failed:", error);
