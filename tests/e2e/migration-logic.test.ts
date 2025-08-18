@@ -4,13 +4,17 @@
  */
 
 // Simple assertion functions
-function assertEquals(actual: any, expected: any, message?: string): void {
+function assertEquals(
+  actual: unknown,
+  expected: unknown,
+  message?: string,
+): void {
   if (actual !== expected) {
     throw new Error(message || `Expected ${expected}, got ${actual}`);
   }
 }
 
-function assertExists(value: any, message?: string): void {
+function assertExists(value: unknown, message?: string): void {
   if (value === null || value === undefined) {
     throw new Error(message || "Expected value to exist");
   }
@@ -37,7 +41,7 @@ function generateTestData() {
  */
 class MockMigrationTracker {
   private steps: Map<string, boolean> = new Map();
-  private data: Map<string, any> = new Map();
+  private data: Map<string, unknown> = new Map();
 
   constructor() {
     this.resetSteps();
@@ -64,17 +68,17 @@ class MockMigrationTracker {
     return Object.fromEntries(this.steps);
   }
 
-  setData(key: string, value: any): void {
+  setData(key: string, value: unknown): void {
     this.data.set(key, value);
   }
 
-  getData(key: string): any {
+  getData(key: string): unknown {
     return this.data.get(key);
   }
 
   getDataIntegrity(): boolean {
-    const originalData = this.getData("originalData");
-    const migratedData = this.getData("migratedData");
+    const originalData = this.getData("originalData") as Record<string, unknown>;
+    const migratedData = this.getData("migratedData") as Record<string, unknown>;
 
     if (!originalData || !migratedData) {
       return false;
@@ -89,6 +93,32 @@ class MockMigrationTracker {
   }
 }
 
+interface SourceData {
+  handle: string;
+  did: string;
+  posts?: unknown[];
+  preferences?: unknown;
+  [key: string]: unknown;
+}
+
+interface SourcePreferences {
+  contentLanguages?: string[];
+  adultContentEnabled?: boolean;
+  [key: string]: unknown;
+}
+
+interface SourceRepository {
+  postCount: number;
+  posts?: unknown[];
+  [key: string]: unknown;
+}
+
+interface SourceBlobs {
+  blobCount: number;
+  blobs?: unknown[];
+  [key: string]: unknown;
+}
+
 /**
  * Mock Airport API client for testing
  */
@@ -96,8 +126,8 @@ class MockAirportClient {
   private migrationTracker = new MockMigrationTracker();
 
   async createAccount(
-    sourceData: any,
-    targetPds: string,
+    sourceData: SourceData,
+    _targetPds: string,
   ): Promise<{ success: boolean; did: string; handle: string }> {
     // Simulate account creation
     await this.delay(100);
@@ -111,7 +141,9 @@ class MockAirportClient {
     };
   }
 
-  async migratePreferences(sourcePrefs: any): Promise<{ success: boolean }> {
+  async migratePreferences(
+    sourcePrefs: SourcePreferences,
+  ): Promise<{ success: boolean }> {
     await this.delay(50);
 
     this.migrationTracker.setData("migratedPrefs", sourcePrefs);
@@ -120,7 +152,9 @@ class MockAirportClient {
     return { success: true };
   }
 
-  async migrateRepository(sourceRepo: any): Promise<{ success: boolean }> {
+  async migrateRepository(
+    sourceRepo: SourceRepository,
+  ): Promise<{ success: boolean }> {
     await this.delay(200);
 
     this.migrationTracker.setData("migratedRepo", sourceRepo);
@@ -129,7 +163,7 @@ class MockAirportClient {
     return { success: true };
   }
 
-  async migrateBlobs(sourceBlobs: any): Promise<{ success: boolean }> {
+  async migrateBlobs(sourceBlobs: SourceBlobs): Promise<{ success: boolean }> {
     await this.delay(150);
 
     this.migrationTracker.setData("migratedBlobs", sourceBlobs);
@@ -153,7 +187,7 @@ class MockAirportClient {
     return { success: true, valid };
   }
 
-  async activateAccount(did: string): Promise<{ success: boolean }> {
+  async activateAccount(_did: string): Promise<{ success: boolean }> {
     await this.delay(100);
 
     this.migrationTracker.completeStep("accountActivated");
@@ -161,9 +195,9 @@ class MockAirportClient {
     return { success: true };
   }
 
-  async checkMigrationStatus(
+  checkMigrationStatus(
     step?: string,
-  ): Promise<{ ready: boolean; reason?: string }> {
+  ): { ready: boolean; reason?: string } {
     const steps = this.migrationTracker.getAllSteps();
 
     switch (step) {
@@ -191,7 +225,7 @@ class MockAirportClient {
     this.migrationTracker.resetSteps();
   }
 
-  private async delay(ms: number): Promise<void> {
+  private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
@@ -239,6 +273,7 @@ Deno.test({
     // Migrate repository
     const repoResult = await client.migrateRepository({
       postCount: originalData.postCount,
+      posts: [],
     });
     assertEquals(repoResult.success, true);
     console.log("✓ Repository migration successful");
@@ -246,6 +281,7 @@ Deno.test({
     // Migrate blobs
     const blobsResult = await client.migrateBlobs({
       blobCount: originalData.blobCount,
+      blobs: [],
     });
     assertEquals(blobsResult.success, true);
     console.log("✓ Blobs migration successful");
@@ -254,10 +290,10 @@ Deno.test({
     const migratedData = {
       userPrefs: client["migrationTracker"].getData("migratedPrefs"),
       postCount:
-        client["migrationTracker"].getData("migratedRepo")?.postCount ||
+        (client["migrationTracker"].getData("migratedRepo") as SourceRepository)?.postCount ||
         originalData.postCount,
       blobCount:
-        client["migrationTracker"].getData("migratedBlobs")?.blobCount ||
+        (client["migrationTracker"].getData("migratedBlobs") as SourceBlobs)?.blobCount ||
         originalData.blobCount,
     };
     client["migrationTracker"].setData("migratedData", migratedData);
@@ -333,8 +369,8 @@ Deno.test({
     client["migrationTracker"].setData("originalData", originalData);
 
     await client.migratePreferences(originalData.userPrefs);
-    await client.migrateRepository({ postCount: originalData.postCount });
-    await client.migrateBlobs({ blobCount: originalData.blobCount });
+    await client.migrateRepository({ postCount: originalData.postCount, posts: [] });
+    await client.migrateBlobs({ blobCount: originalData.blobCount, blobs: [] });
 
     client["migrationTracker"].setData("migratedData", originalData);
 
@@ -344,7 +380,7 @@ Deno.test({
     // Verify first migration
     let finalStatus = await client.checkMigrationStatus();
     assertEquals(finalStatus.ready, true);
-    let dataIntegrity = client.getDataIntegrity();
+    const dataIntegrity = client.getDataIntegrity();
     assertEquals(dataIntegrity, true);
     console.log("✓ First migration (A→B) completed successfully");
 
@@ -358,8 +394,8 @@ Deno.test({
     client["migrationTracker"].setData("originalData", originalData);
 
     await client.migratePreferences(originalData.userPrefs);
-    await client.migrateRepository({ postCount: originalData.postCount });
-    await client.migrateBlobs({ blobCount: originalData.blobCount });
+    await client.migrateRepository({ postCount: originalData.postCount, posts: [] });
+    await client.migrateBlobs({ blobCount: originalData.blobCount, blobs: [] });
 
     client["migrationTracker"].setData("migratedData", originalData);
 
@@ -424,7 +460,7 @@ Deno.test({
  */
 Deno.test({
   name: "Data Integrity Test",
-  async fn() {
+  fn() {
     console.log("Testing data integrity scenarios...");
 
     const client = new MockAirportClient();

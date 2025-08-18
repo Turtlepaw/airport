@@ -4,13 +4,17 @@
  */
 
 // Simple assertion functions
-function assertEquals(actual: any, expected: any, message?: string): void {
+function assertEquals(
+  actual: unknown,
+  expected: unknown,
+  message?: string,
+): void {
   if (actual !== expected) {
     throw new Error(message || `Expected ${expected}, got ${actual}`);
   }
 }
 
-function assertExists(value: any, message?: string): void {
+function assertExists(value: unknown, message?: string): void {
   if (value === null || value === undefined) {
     throw new Error(message || "Expected value to exist");
   }
@@ -48,7 +52,7 @@ class SimpleTestClient {
     options: RequestInit = {},
   ): Promise<Response> {
     const url = `${this.baseUrl}${path}`;
-    return fetch(url, {
+    return await fetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -243,7 +247,7 @@ Deno.test({
  */
 Deno.test({
   name: "Migration Flow Structure Test",
-  async fn() {
+  fn() {
     console.log("Testing migration flow structure...");
 
     // Test data

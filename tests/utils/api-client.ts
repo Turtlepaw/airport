@@ -48,7 +48,7 @@ export class AirportTestClient {
       headers.set("Cookie", cookies.join("; "));
     }
 
-    return fetch(url, {
+    return await fetch(url, {
       ...options,
       headers,
     });
@@ -65,7 +65,7 @@ export class AirportTestClient {
     password: string,
     inviteCode?: string,
   ): Promise<Response> {
-    return this.makeRequest(
+    return await this.makeRequest(
       "/api/migrate/create",
       {
         method: "POST",
@@ -91,14 +91,14 @@ export class AirportTestClient {
     const url = step
       ? `/api/migrate/status?step=${step}`
       : "/api/migrate/status";
-    return this.makeRequest(url, { method: "GET" }, session.cookies);
+    return await this.makeRequest(url, { method: "GET" }, session.cookies);
   }
 
   /**
    * Get next migration step
    */
   async getNextMigrationStep(session: TestSession): Promise<Response> {
-    return this.makeRequest(
+    return await this.makeRequest(
       "/api/migrate/next-step",
       { method: "GET" },
       session.cookies,
@@ -109,7 +109,7 @@ export class AirportTestClient {
    * Migrate user preferences
    */
   async migratePreferences(session: TestSession): Promise<Response> {
-    return this.makeRequest(
+    return await this.makeRequest(
       "/api/migrate/data/prefs",
       { method: "POST" },
       session.cookies,
@@ -120,7 +120,7 @@ export class AirportTestClient {
    * Migrate repository data
    */
   async migrateRepository(session: TestSession): Promise<Response> {
-    return this.makeRequest(
+    return await this.makeRequest(
       "/api/migrate/data/repo",
       { method: "POST" },
       session.cookies,
@@ -131,7 +131,7 @@ export class AirportTestClient {
    * Migrate blobs/media
    */
   async migrateBlobs(session: TestSession): Promise<Response> {
-    return this.makeRequest(
+    return await this.makeRequest(
       "/api/migrate/data/blobs",
       { method: "POST" },
       session.cookies,
@@ -142,7 +142,7 @@ export class AirportTestClient {
    * Finalize migration
    */
   async finalizeMigration(session: TestSession): Promise<Response> {
-    return this.makeRequest(
+    return await this.makeRequest(
       "/api/migrate/finalize",
       { method: "POST" },
       session.cookies,
@@ -153,16 +153,23 @@ export class AirportTestClient {
    * Get user profile information
    */
   async getUserProfile(session: TestSession): Promise<Response> {
-    return this.makeRequest("/api/me", { method: "GET" }, session.cookies);
+    return await this.makeRequest(
+      "/api/me",
+      { method: "GET" },
+      session.cookies,
+    );
   }
 
   /**
    * Resolve PDS for a DID
    */
   async resolvePDS(did: string): Promise<Response> {
-    return this.makeRequest(`/api/resolve-pds?did=${encodeURIComponent(did)}`, {
-      method: "GET",
-    });
+    return await this.makeRequest(
+      `/api/resolve-pds?did=${encodeURIComponent(did)}`,
+      {
+        method: "GET",
+      },
+    );
   }
 
   /**
@@ -187,11 +194,11 @@ export class AirportTestClient {
   /**
    * Create a test session by simulating login
    */
-  async createTestSession(
-    agent: Agent,
+  createTestSession(
+    _agent: Agent,
     did: string,
     handle: string,
-  ): Promise<TestSession> {
+  ): TestSession {
     // This would typically involve the OAuth flow or credential login
     // For testing purposes, we'll create a mock session
     return {
@@ -205,7 +212,7 @@ export class AirportTestClient {
 /**
  * Helper function to parse JSON response safely
  */
-export async function safeJsonParse(response: Response): Promise<any> {
+export async function safeJsonParse(response: Response): Promise<unknown> {
   const text = await response.text();
   try {
     return JSON.parse(text);

@@ -10,13 +10,13 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { beforeAll, describe, it } from "@std/testing/bdd";
-import { Agent } from "@atproto/api";
+import { Agent as _Agent } from "@atproto/api";
 
 import {
   generateTestData,
   TestAccount,
   TestEnvironment,
-  waitFor,
+  waitFor as _waitFor,
 } from "../utils/test-env.ts";
 import {
   AirportTestClient,

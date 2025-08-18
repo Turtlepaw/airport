@@ -57,12 +57,12 @@ export class TestEnvironment {
   /**
    * Create a test account on a specific PDS
    */
-  async createTestAccount(
+  createTestAccount(
     pdsName: string,
     handle: string,
     email: string,
     password: string,
-  ): Promise<TestAccount> {
+  ): TestAccount {
     const pds = this.getPDS(pdsName);
     if (!pds) {
       throw new Error(`PDS ${pdsName} not found`);
@@ -130,7 +130,7 @@ export class TestEnvironment {
 
       // Set user preferences
       try {
-        const preferences = {
+        const _preferences = {
           "$type": "app.bsky.actor.defs#preferences",
           contentLanguages: ["en"],
           adultContentEnabled: false,
@@ -322,7 +322,7 @@ export class TestEnvironment {
   /**
    * Cleanup test environment
    */
-  async cleanup(): Promise<void> {
+  cleanup(): void {
     console.log("Cleaning up test environment");
     this.testAccounts.clear();
   }
