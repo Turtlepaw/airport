@@ -5,14 +5,14 @@
 export const TEST_CONFIG = {
   // Airport application URL
   airportUrl: Deno.env.get("AIRPORT_URL") || "http://localhost:8000",
-  
+
   // Test timeouts
   defaultTimeout: 30000, // 30 seconds
   migrationTimeout: 120000, // 2 minutes for migration operations
-  
+
   // Polling intervals
   statusCheckInterval: 2000, // 2 seconds
-  
+
   // Test data generation
   testDataSeed: Date.now(),
 };
@@ -23,10 +23,10 @@ export const TEST_CONFIG = {
 export const TEST_ENV = {
   // Whether to run tests against a real Airport instance
   useRealInstance: Deno.env.get("USE_REAL_INSTANCE") === "true",
-  
+
   // Whether to skip cleanup (useful for debugging)
   skipCleanup: Deno.env.get("SKIP_CLEANUP") === "true",
-  
+
   // Log level for tests
   logLevel: Deno.env.get("TEST_LOG_LEVEL") || "info",
 };
@@ -42,7 +42,7 @@ export const MOCK_PDS_CONFIG = {
     name: "Test PDS A",
   },
   pdsB: {
-    url: "http://localhost:2584", 
+    url: "http://localhost:2584",
     did: "did:plc:test-pds-b-mock",
     port: 2584,
     name: "Test PDS B",

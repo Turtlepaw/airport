@@ -28,7 +28,7 @@ const TEST_CONFIG = {
 function generateTestData() {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(7);
-  
+
   return {
     handle: `testuser-${random}`,
     email: `test-${random}@example.com`,
@@ -43,7 +43,10 @@ function generateTestData() {
 class SimpleTestClient {
   constructor(private baseUrl: string) {}
 
-  async makeRequest(path: string, options: RequestInit = {}): Promise<Response> {
+  async makeRequest(
+    path: string,
+    options: RequestInit = {},
+  ): Promise<Response> {
     const url = `${this.baseUrl}${path}`;
     return fetch(url, {
       ...options,
@@ -71,10 +74,12 @@ Deno.test({
       const statusResponse = await client.makeRequest("/api/migrate/status", {
         method: "GET",
       });
-      
+
       // Should return 401 for unauthorized access
       assertEquals(statusResponse.status, 401);
-      console.log("✓ Migration status endpoint exists and requires authentication");
+      console.log(
+        "✓ Migration status endpoint exists and requires authentication",
+      );
     } catch (error) {
       console.error("Migration status endpoint test failed:", error);
       throw error;
@@ -91,7 +96,7 @@ Deno.test({
           password: testData.password,
         }),
       });
-      
+
       // Should return 401 for unauthorized access or 400 for invalid request
       assertEquals(
         createResponse.status === 401 || createResponse.status === 400,
@@ -105,10 +110,13 @@ Deno.test({
 
     // Test 3: Check next step endpoint
     try {
-      const nextStepResponse = await client.makeRequest("/api/migrate/next-step", {
-        method: "GET",
-      });
-      
+      const nextStepResponse = await client.makeRequest(
+        "/api/migrate/next-step",
+        {
+          method: "GET",
+        },
+      );
+
       // Should return some response (might be 401 or actual data)
       assertExists(nextStepResponse);
       console.log("✓ Next step endpoint exists");
@@ -118,8 +126,12 @@ Deno.test({
     }
 
     // Test 4: Check data migration endpoints exist
-    const dataEndpoints = ["/api/migrate/data/prefs", "/api/migrate/data/repo", "/api/migrate/data/blobs"];
-    
+    const dataEndpoints = [
+      "/api/migrate/data/prefs",
+      "/api/migrate/data/repo",
+      "/api/migrate/data/blobs",
+    ];
+
     for (const endpoint of dataEndpoints) {
       try {
         const response = await client.makeRequest(endpoint, {
@@ -128,17 +140,23 @@ Deno.test({
         assertExists(response);
         console.log(`✓ Data migration endpoint exists: ${endpoint}`);
       } catch (error) {
-        console.error(`Data migration endpoint test failed for ${endpoint}:`, error);
+        console.error(
+          `Data migration endpoint test failed for ${endpoint}:`,
+          error,
+        );
         throw error;
       }
     }
 
     // Test 5: Check finalize endpoint
     try {
-      const finalizeResponse = await client.makeRequest("/api/migrate/finalize", {
-        method: "POST",
-      });
-      
+      const finalizeResponse = await client.makeRequest(
+        "/api/migrate/finalize",
+        {
+          method: "POST",
+        },
+      );
+
       assertExists(finalizeResponse);
       console.log("✓ Migration finalize endpoint exists");
     } catch (error) {
@@ -164,19 +182,24 @@ Deno.test({
     console.log("Testing PDS resolution functionality...");
 
     try {
-      const response = await client.makeRequest(`/api/resolve-pds?did=${encodeURIComponent(testDid)}`, {
-        method: "GET",
-      });
+      const response = await client.makeRequest(
+        `/api/resolve-pds?did=${encodeURIComponent(testDid)}`,
+        {
+          method: "GET",
+        },
+      );
 
       assertExists(response);
-      
+
       if (response.ok) {
         const data = await response.json();
         assertExists(data);
         console.log("✓ PDS resolution endpoint works", data);
       } else {
         // Even if it fails, the endpoint should exist and handle the request
-        console.log("✓ PDS resolution endpoint exists (returned error as expected for test DID)");
+        console.log(
+          "✓ PDS resolution endpoint exists (returned error as expected for test DID)",
+        );
       }
     } catch (error) {
       console.error("PDS resolution test failed:", error);
@@ -191,7 +214,7 @@ Deno.test({
  * Test user profile endpoint
  */
 Deno.test({
-  name: "User Profile API Test", 
+  name: "User Profile API Test",
   async fn() {
     const client = new SimpleTestClient(TEST_CONFIG.airportUrl);
 
@@ -225,15 +248,15 @@ Deno.test({
 
     // Test data
     const testData = generateTestData();
-    
+
     // Verify test data generation
     assertExists(testData.handle);
     assertExists(testData.email);
     assertExists(testData.password);
     assertExists(testData.did);
-    
+
     console.log("✓ Test data generation works");
-    
+
     // Verify the expected migration flow steps
     const expectedSteps = [
       "Account creation on target PDS",

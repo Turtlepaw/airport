@@ -34,7 +34,7 @@ export class AirportTestClient {
   ): Promise<Response> {
     const url = `${this.baseUrl}${path}`;
     const headers = new Headers(this.defaultHeaders);
-    
+
     // Add any existing headers from options
     if (options.headers) {
       const optionsHeaders = new Headers(options.headers);

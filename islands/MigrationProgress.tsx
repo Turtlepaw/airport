@@ -307,7 +307,7 @@ export default function MigrationProgress(props: MigrationProgressProps) {
         );
         return;
       }
-      
+
       // If verification succeeds, mark as completed and continue
       updateStepStatus(2, "completed");
       await startFinalization();
@@ -398,15 +398,20 @@ export default function MigrationProgress(props: MigrationProgressProps) {
   };
 
   // Helper to verify a step after completion
-  const verifyStep = async (stepNum: number, isManualSubmission: boolean = false) => {
+  const verifyStep = async (
+    stepNum: number,
+    isManualSubmission: boolean = false,
+  ) => {
     console.log(`Verification: Starting step ${stepNum + 1}`);
-    
+
     // Skip automatic verification for step 2 (identity migration) unless it's after manual token submission
     if (stepNum === 2 && !isManualSubmission) {
-      console.log(`Verification: Skipping automatic verification for identity migration step`);
+      console.log(
+        `Verification: Skipping automatic verification for identity migration step`,
+      );
       return false;
     }
-    
+
     updateStepStatus(stepNum, "verifying");
     try {
       console.log(`Verification: Fetching status for step ${stepNum + 1}`);
@@ -491,7 +496,9 @@ export default function MigrationProgress(props: MigrationProgressProps) {
   const retryVerification = async (stepNum: number) => {
     console.log(`Retrying verification for step ${stepNum + 1}`);
     // For identity migration step, pass true if it's after manual submission
-    const isManualSubmission = stepNum === 2 && steps[2].name === "Enter the token sent to your email to complete identity migration";
+    const isManualSubmission = stepNum === 2 &&
+      steps[2].name ===
+        "Enter the token sent to your email to complete identity migration";
     await verifyStep(stepNum, isManualSubmission);
   };
 
@@ -629,10 +636,12 @@ export default function MigrationProgress(props: MigrationProgressProps) {
     // Step 3: Request Identity Migration
     // Check if already in progress to prevent duplicate calls
     if (steps[2].status === "in-progress" || steps[2].status === "completed") {
-      console.log("Identity migration already in progress or completed, skipping duplicate call");
+      console.log(
+        "Identity migration already in progress or completed, skipping duplicate call",
+      );
       return;
     }
-    
+
     updateStepStatus(2, "in-progress");
     console.log("Requesting identity migration...");
 
@@ -682,7 +691,9 @@ export default function MigrationProgress(props: MigrationProgressProps) {
         );
         // Don't verify or continue - wait for token input
         // Skip automatic verification for identity migration step
-        console.log("Identity migration: Waiting for user token input, skipping auto-verification");
+        console.log(
+          "Identity migration: Waiting for user token input, skipping auto-verification",
+        );
         return;
       } catch (e) {
         console.error("Failed to parse identity request response:", e);

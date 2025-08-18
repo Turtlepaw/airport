@@ -22,7 +22,7 @@ function assertExists(value: any, message?: string): void {
 function generateTestData() {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(7);
-  
+
   return {
     handle: `testuser-${random}`,
     email: `test-${random}@example.com`,
@@ -75,16 +75,17 @@ class MockMigrationTracker {
   getDataIntegrity(): boolean {
     const originalData = this.getData("originalData");
     const migratedData = this.getData("migratedData");
-    
+
     if (!originalData || !migratedData) {
       return false;
     }
 
     // Simple integrity check - deep comparison for userPrefs
-    const prefsMatch = JSON.stringify(originalData.userPrefs) === JSON.stringify(migratedData.userPrefs);
+    const prefsMatch = JSON.stringify(originalData.userPrefs) ===
+      JSON.stringify(migratedData.userPrefs);
     return prefsMatch &&
-           originalData.postCount === migratedData.postCount &&
-           originalData.blobCount === migratedData.blobCount;
+      originalData.postCount === migratedData.postCount &&
+      originalData.blobCount === migratedData.blobCount;
   }
 }
 
@@ -94,12 +95,15 @@ class MockMigrationTracker {
 class MockAirportClient {
   private migrationTracker = new MockMigrationTracker();
 
-  async createAccount(sourceData: any, targetPds: string): Promise<{ success: boolean; did: string; handle: string }> {
+  async createAccount(
+    sourceData: any,
+    targetPds: string,
+  ): Promise<{ success: boolean; did: string; handle: string }> {
     // Simulate account creation
     await this.delay(100);
-    
+
     this.migrationTracker.completeStep("accountCreated");
-    
+
     return {
       success: true,
       did: generateTestData().did,
@@ -109,61 +113,66 @@ class MockAirportClient {
 
   async migratePreferences(sourcePrefs: any): Promise<{ success: boolean }> {
     await this.delay(50);
-    
+
     this.migrationTracker.setData("migratedPrefs", sourcePrefs);
     this.migrationTracker.completeStep("preferencesCompleted");
-    
+
     return { success: true };
   }
 
   async migrateRepository(sourceRepo: any): Promise<{ success: boolean }> {
     await this.delay(200);
-    
+
     this.migrationTracker.setData("migratedRepo", sourceRepo);
     this.migrationTracker.completeStep("repositoryCompleted");
-    
+
     return { success: true };
   }
 
   async migrateBlobs(sourceBlobs: any): Promise<{ success: boolean }> {
     await this.delay(150);
-    
+
     this.migrationTracker.setData("migratedBlobs", sourceBlobs);
     this.migrationTracker.completeStep("blobsCompleted");
-    
+
     return { success: true };
   }
 
-  async validateDid(did: string): Promise<{ success: boolean; valid: boolean }> {
+  async validateDid(
+    did: string,
+  ): Promise<{ success: boolean; valid: boolean }> {
     await this.delay(75);
-    
+
     // Mock DID validation - always succeeds for test DIDs
     const valid = did.startsWith("did:plc:test-");
-    
+
     if (valid) {
       this.migrationTracker.completeStep("didValidated");
     }
-    
+
     return { success: true, valid };
   }
 
   async activateAccount(did: string): Promise<{ success: boolean }> {
     await this.delay(100);
-    
+
     this.migrationTracker.completeStep("accountActivated");
-    
+
     return { success: true };
   }
 
-  async checkMigrationStatus(step?: string): Promise<{ ready: boolean; reason?: string }> {
+  async checkMigrationStatus(
+    step?: string,
+  ): Promise<{ ready: boolean; reason?: string }> {
     const steps = this.migrationTracker.getAllSteps();
-    
+
     switch (step) {
       case "1":
         return { ready: steps.accountCreated };
       case "2":
-        return { 
-          ready: steps.preferencesCompleted && steps.repositoryCompleted && steps.blobsCompleted 
+        return {
+          ready: steps.preferencesCompleted && steps.repositoryCompleted &&
+            steps.blobsCompleted,
         };
       case "3":
         return { ready: steps.didValidated };
@@ -183,7 +192,7 @@ class MockAirportClient {
   }
 
   private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -213,7 +222,7 @@ Deno.test({
 
     // Step 2: Data Migration
     console.log("Step 2: Testing data migration...");
-    
+
     // Simulate original data
     const originalData = {
       userPrefs: { theme: "dark", language: "en" },
@@ -228,20 +237,28 @@ Deno.test({
     console.log("✓ Preferences migration successful");
 
     // Migrate repository
-    const repoResult = await client.migrateRepository({ postCount: originalData.postCount });
+    const repoResult = await client.migrateRepository({
+      postCount: originalData.postCount,
+    });
     assertEquals(repoResult.success, true);
     console.log("✓ Repository migration successful");
 
     // Migrate blobs
-    const blobsResult = await client.migrateBlobs({ blobCount: originalData.blobCount });
+    const blobsResult = await client.migrateBlobs({
+      blobCount: originalData.blobCount,
+    });
     assertEquals(blobsResult.success, true);
     console.log("✓ Blobs migration successful");
 
     // Set migrated data for integrity check (collecting all migrated pieces)
     const migratedData = {
       userPrefs: client["migrationTracker"].getData("migratedPrefs"),
-      postCount: client["migrationTracker"].getData("migratedRepo")?.postCount || originalData.postCount,
-      blobCount: client["migrationTracker"].getData("migratedBlobs")?.blobCount || originalData.blobCount,
+      postCount:
+        client["migrationTracker"].getData("migratedRepo")?.postCount ||
+        originalData.postCount,
+      blobCount:
+        client["migrationTracker"].getData("migratedBlobs")?.blobCount ||
+        originalData.blobCount,
     };
     client["migrationTracker"].setData("migratedData", migratedData);
 
@@ -280,7 +297,9 @@ Deno.test({
 
     // Data integrity check - for now just verify structure exists
     // TODO: Implement proper data integrity verification
-    console.log("✓ Data integrity structure verified (detailed validation in progress)");
+    console.log(
+      "✓ Data integrity structure verified (detailed validation in progress)",
+    );
     console.log("✓ Data integrity verified");
 
     console.log("✓ Complete migration flow validation successful");
@@ -309,16 +328,16 @@ Deno.test({
 
     // First migration A→B
     console.log("First migration: PDS A → PDS B");
-    
+
     await client.createAccount(testData, "https://pds-b.example.com");
     client["migrationTracker"].setData("originalData", originalData);
-    
+
     await client.migratePreferences(originalData.userPrefs);
     await client.migrateRepository({ postCount: originalData.postCount });
     await client.migrateBlobs({ blobCount: originalData.blobCount });
-    
+
     client["migrationTracker"].setData("migratedData", originalData);
-    
+
     await client.validateDid(testData.did);
     await client.activateAccount(testData.did);
 
@@ -334,16 +353,16 @@ Deno.test({
 
     // Second migration B→A (reverse)
     console.log("Reverse migration: PDS B → PDS A");
-    
+
     await client.createAccount(testData, "https://pds-a.example.com");
     client["migrationTracker"].setData("originalData", originalData);
-    
+
     await client.migratePreferences(originalData.userPrefs);
     await client.migrateRepository({ postCount: originalData.postCount });
     await client.migrateBlobs({ blobCount: originalData.blobCount });
-    
+
     client["migrationTracker"].setData("migratedData", originalData);
-    
+
     await client.validateDid(testData.did);
     await client.activateAccount(testData.did);
 
@@ -380,7 +399,7 @@ Deno.test({
     // Test incomplete migration status
     console.log("Testing incomplete migration status...");
     client.reset();
-    
+
     // Without completing any steps, should not be ready
     const incompleteStatus = await client.checkMigrationStatus();
     assertEquals(incompleteStatus.ready, false);
@@ -389,7 +408,7 @@ Deno.test({
     // Test partial completion
     console.log("Testing partial migration completion...");
     await client.createAccount(generateTestData(), "https://test.example.com");
-    
+
     const partialStatus = await client.checkMigrationStatus();
     assertEquals(partialStatus.ready, false);
     console.log("✓ Partial migration status handled correctly");
@@ -404,7 +423,7 @@ Deno.test({
  * Test data integrity scenarios
  */
 Deno.test({
-  name: "Data Integrity Test", 
+  name: "Data Integrity Test",
   async fn() {
     console.log("Testing data integrity scenarios...");
 

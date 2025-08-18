@@ -1,6 +1,6 @@
 /**
  * End-to-End tests for Airport PDS migration functionality
- * 
+ *
  * This test suite validates the complete migration flow:
  * 1. Account creation on target PDS
  * 2. Data migration (preferences, repository, blobs)
@@ -13,16 +13,16 @@ import { beforeAll, describe, it } from "@std/testing/bdd";
 import { Agent } from "@atproto/api";
 
 import {
-  TestEnvironment,
-  TestAccount,
   generateTestData,
+  TestAccount,
+  TestEnvironment,
   waitFor,
 } from "../utils/test-env.ts";
 import {
   AirportTestClient,
-  TestSession,
-  safeJsonParse,
   assertSuccessResponse,
+  safeJsonParse,
+  TestSession,
   waitForCondition,
 } from "../utils/api-client.ts";
 
@@ -46,9 +46,9 @@ describe("Airport E2E Migration Tests", () => {
     console.log("Setting up test environment...");
     testEnv = new TestEnvironment();
     client = new AirportTestClient(TEST_CONFIG.airportUrl);
-    
+
     // Allow some time for any async setup
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   describe("Complete Migration Flow", () => {
@@ -59,7 +59,7 @@ describe("Airport E2E Migration Tests", () => {
 
     it("should set up test accounts on both PDS instances", async () => {
       const testData = generateTestData();
-      
+
       // Create source account on PDS A
       sourceAccount = await testEnv.createTestAccount(
         "pds-a",
@@ -67,20 +67,22 @@ describe("Airport E2E Migration Tests", () => {
         testData.email,
         testData.password,
       );
-      
+
       assertExists(sourceAccount);
       assertEquals(sourceAccount.handle, testData.handle);
       assertExists(sourceAccount.did);
-      
+
       // Create session for source account
       sourceSession = await client.createTestSession(
         sourceAccount.agent,
         sourceAccount.did,
         sourceAccount.handle,
       );
-      
+
       assertExists(sourceSession);
-      console.log(`✓ Source account created: ${sourceAccount.handle} (${sourceAccount.did})`);
+      console.log(
+        `✓ Source account created: ${sourceAccount.handle} (${sourceAccount.did})`,
+      );
     });
 
     it("should populate source account with test data", async () => {
@@ -91,7 +93,7 @@ describe("Airport E2E Migration Tests", () => {
     it("should initiate migration by creating account on target PDS", async () => {
       const pdsB = testEnv.getPDS("pds-b");
       assertExists(pdsB);
-      
+
       const testData = generateTestData();
       const response = await client.createMigrationAccount(
         sourceSession,
@@ -100,16 +102,18 @@ describe("Airport E2E Migration Tests", () => {
         `migrated-${testData.email}`,
         testData.password,
       );
-      
+
       assertSuccessResponse(response, "Failed to create migration account");
-      
+
       const result = await safeJsonParse(response);
       assertEquals(result.success, true);
       assertExists(result.did);
       assertExists(result.handle);
-      
-      console.log(`✓ Migration account created: ${result.handle} (${result.did})`);
-      
+
+      console.log(
+        `✓ Migration account created: ${result.handle} (${result.did})`,
+      );
+
       // Extract migration session cookies
       const cookies = client.extractCookies(response);
       migrationSession = {
@@ -122,40 +126,40 @@ describe("Airport E2E Migration Tests", () => {
     it("should check migration status and verify step 1 readiness", async () => {
       const response = await client.checkMigrationStatus(migrationSession, "1");
       assertSuccessResponse(response);
-      
+
       const status = await safeJsonParse(response);
       assertEquals(status.ready, true);
-      
+
       console.log("✓ Step 1 (account creation) marked as ready");
     });
 
     it("should migrate user preferences", async () => {
       const response = await client.migratePreferences(migrationSession);
       assertSuccessResponse(response, "Failed to migrate preferences");
-      
+
       const result = await safeJsonParse(response);
       assertEquals(result.success, true);
-      
+
       console.log("✓ User preferences migrated successfully");
     });
 
     it("should migrate repository data", async () => {
       const response = await client.migrateRepository(migrationSession);
       assertSuccessResponse(response, "Failed to migrate repository");
-      
+
       const result = await safeJsonParse(response);
       assertEquals(result.success, true);
-      
+
       console.log("✓ Repository data migrated successfully");
     });
 
     it("should migrate blobs and media", async () => {
       const response = await client.migrateBlobs(migrationSession);
       assertSuccessResponse(response, "Failed to migrate blobs");
-      
+
       const result = await safeJsonParse(response);
       assertEquals(result.success, true);
-      
+
       console.log("✓ Blobs and media migrated successfully");
     });
 
@@ -163,7 +167,10 @@ describe("Airport E2E Migration Tests", () => {
       // Wait for data migration to complete and be indexed
       await waitForCondition(
         async () => {
-          const response = await client.checkMigrationStatus(migrationSession, "2");
+          const response = await client.checkMigrationStatus(
+            migrationSession,
+            "2",
+          );
           return safeJsonParse(response);
         },
         (status) => status.ready === true,
@@ -173,7 +180,7 @@ describe("Airport E2E Migration Tests", () => {
           message: "Step 2 not ready after data migration",
         },
       );
-      
+
       console.log("✓ Step 2 (data migration) marked as ready");
     });
 
@@ -181,7 +188,10 @@ describe("Airport E2E Migration Tests", () => {
       // Wait for DID validation
       await waitForCondition(
         async () => {
-          const response = await client.checkMigrationStatus(migrationSession, "3");
+          const response = await client.checkMigrationStatus(
+            migrationSession,
+            "3",
+          );
           return safeJsonParse(response);
         },
         (status) => status.ready === true,
@@ -191,17 +201,17 @@ describe("Airport E2E Migration Tests", () => {
           message: "Step 3 (DID validation) not ready",
         },
       );
-      
+
       console.log("✓ Step 3 (DID validation) marked as ready");
     });
 
     it("should finalize migration", async () => {
       const response = await client.finalizeMigration(migrationSession);
       assertSuccessResponse(response, "Failed to finalize migration");
-      
+
       const result = await safeJsonParse(response);
       assertEquals(result.success, true);
-      
+
       console.log("✓ Migration finalized successfully");
     });
 
@@ -209,7 +219,10 @@ describe("Airport E2E Migration Tests", () => {
       // Wait for account activation
       await waitForCondition(
         async () => {
-          const response = await client.checkMigrationStatus(migrationSession, "4");
+          const response = await client.checkMigrationStatus(
+            migrationSession,
+            "4",
+          );
           return safeJsonParse(response);
         },
         (status) => status.ready === true,
@@ -219,18 +232,18 @@ describe("Airport E2E Migration Tests", () => {
           message: "Step 4 (account activation) not ready",
         },
       );
-      
+
       console.log("✓ Step 4 (account activation) completed");
     });
 
     it("should verify migration completion", async () => {
       const response = await client.getNextMigrationStep(migrationSession);
       assertSuccessResponse(response);
-      
+
       const result = await safeJsonParse(response);
       assertEquals(result.completed, true);
       assertEquals(result.nextStep, null);
-      
+
       console.log("✓ Migration marked as complete");
     });
 
@@ -238,7 +251,7 @@ describe("Airport E2E Migration Tests", () => {
       // Create target account reference for verification
       const pdsB = testEnv.getPDS("pds-b");
       assertExists(pdsB);
-      
+
       targetAccount = await testEnv.createTestAccount(
         "pds-b",
         migrationSession.handle,
@@ -246,14 +259,14 @@ describe("Airport E2E Migration Tests", () => {
         "migrated-password",
       );
       targetAccount.did = migrationSession.did;
-      
+
       // Verify data integrity
       const dataIntegrityCheck = await testEnv.verifyDataIntegrity(
         sourceAccount,
         targetAccount,
       );
       assertEquals(dataIntegrityCheck, true);
-      
+
       console.log("✓ Migrated account functionality verified");
     });
   });
@@ -264,16 +277,16 @@ describe("Airport E2E Migration Tests", () => {
     it("should initiate reverse migration back to original PDS", async () => {
       const pdsA = testEnv.getPDS("pds-a");
       assertExists(pdsA);
-      
+
       const testData = generateTestData();
-      
+
       // Create session for the migrated account
       const migratedSession = await client.createTestSession(
         targetAccount.agent,
         targetAccount.did,
         targetAccount.handle,
       );
-      
+
       const response = await client.createMigrationAccount(
         migratedSession,
         pdsA.url,
@@ -281,19 +294,22 @@ describe("Airport E2E Migration Tests", () => {
         `reverse-${testData.email}`,
         testData.password,
       );
-      
-      assertSuccessResponse(response, "Failed to create reverse migration account");
-      
+
+      assertSuccessResponse(
+        response,
+        "Failed to create reverse migration account",
+      );
+
       const result = await safeJsonParse(response);
       assertEquals(result.success, true);
-      
+
       const cookies = client.extractCookies(response);
       reverseSession = {
         did: result.did,
         handle: result.handle,
         cookies: [...migratedSession.cookies, ...cookies],
       };
-      
+
       console.log(`✓ Reverse migration initiated: ${result.handle}`);
     });
 
@@ -318,7 +334,10 @@ describe("Airport E2E Migration Tests", () => {
       // Wait for step 2 readiness
       await waitForCondition(
         async () => {
-          const response = await client.checkMigrationStatus(reverseSession, "2");
+          const response = await client.checkMigrationStatus(
+            reverseSession,
+            "2",
+          );
           return safeJsonParse(response);
         },
         (status) => status.ready === true,
@@ -332,7 +351,10 @@ describe("Airport E2E Migration Tests", () => {
       // Wait for step 3 readiness
       await waitForCondition(
         async () => {
-          const response = await client.checkMigrationStatus(reverseSession, "3");
+          const response = await client.checkMigrationStatus(
+            reverseSession,
+            "3",
+          );
           return safeJsonParse(response);
         },
         (status) => status.ready === true,
@@ -346,7 +368,7 @@ describe("Airport E2E Migration Tests", () => {
       // Finalize reverse migration
       const response = await client.finalizeMigration(reverseSession);
       assertSuccessResponse(response);
-      
+
       console.log("✓ Reverse migration finalized");
     });
 
@@ -366,7 +388,7 @@ describe("Airport E2E Migration Tests", () => {
         finalAccount,
       );
       assertEquals(dataIntegrityCheck, true);
-      
+
       console.log("✓ No data loss detected after round-trip migration");
     });
   });
@@ -402,7 +424,7 @@ describe("Airport E2E Migration Tests", () => {
       };
 
       const response = await client.checkMigrationStatus(fakeSession);
-      
+
       // Should return unauthorized or appropriate error
       assertEquals(response.status, 401);
       console.log("✓ Incomplete migration handled gracefully");

@@ -1,10 +1,13 @@
 # Airport E2E Tests
 
-This directory contains End-to-End (E2E) tests for the Airport PDS migration application. These tests verify the complete migration flow between AT Protocol Personal Data Servers (PDS).
+This directory contains End-to-End (E2E) tests for the Airport PDS migration
+application. These tests verify the complete migration flow between AT Protocol
+Personal Data Servers (PDS).
 
 ## Overview
 
 The E2E tests validate:
+
 - Complete PDS migration flow (account creation, data migration, activation)
 - Data integrity and no data loss during migration
 - Round-trip migration (A→B→A) to ensure reversibility
@@ -54,12 +57,15 @@ deno task test
 
 Tests can be configured via environment variables:
 
-- `AIRPORT_URL` - URL of the Airport application (default: http://localhost:8000)
-- `USE_REAL_INSTANCE` - Whether to test against a real AT Protocol PDS instance (default: false)
+- `AIRPORT_URL` - URL of the Airport application (default:
+  http://localhost:8000)
+- `USE_REAL_INSTANCE` - Whether to test against a real AT Protocol PDS instance
+  (default: false)
 - `SKIP_CLEANUP` - Skip test cleanup for debugging (default: false)
 - `TEST_LOG_LEVEL` - Logging level: error, warn, info, debug (default: info)
 
 Example:
+
 ```bash
 AIRPORT_URL=http://localhost:3000 TEST_LOG_LEVEL=debug deno task test:e2e
 ```
@@ -92,6 +98,7 @@ AIRPORT_URL=http://localhost:3000 TEST_LOG_LEVEL=debug deno task test:e2e
 ## Test Data
 
 Tests use generated mock data including:
+
 - Random user handles and emails
 - Test posts and content
 - User preferences
@@ -103,6 +110,7 @@ Tests use generated mock data including:
 ### Virtual PDS Setup
 
 The tests use mock PDS instances for isolated testing:
+
 - No dependency on real AT Protocol infrastructure
 - Controlled test environment
 - Predictable test data and scenarios
@@ -121,6 +129,7 @@ The tests use mock PDS instances for isolated testing:
 ### Mock PDS Implementation
 
 The test environment creates mock PDS instances that simulate:
+
 - Account creation and management
 - Data storage and retrieval
 - DID resolution
@@ -130,6 +139,7 @@ The test environment creates mock PDS instances that simulate:
 ### Session Management
 
 Tests handle Airport's session management:
+
 - OAuth sessions for real accounts
 - Credential sessions for migration
 - Cookie handling and persistence
@@ -138,6 +148,7 @@ Tests handle Airport's session management:
 ### Data Integrity Verification
 
 Tests verify that migrated data includes:
+
 - All user posts and content
 - User preferences and settings
 - Follow relationships
@@ -167,6 +178,7 @@ When adding new tests:
 ### Debug Mode
 
 Enable debug logging for detailed test output:
+
 ```bash
 TEST_LOG_LEVEL=debug deno task test:e2e
 ```
@@ -174,6 +186,7 @@ TEST_LOG_LEVEL=debug deno task test:e2e
 ### Manual Testing
 
 For manual verification, you can:
+
 1. Start the Airport application: `deno task dev`
 2. Run tests against the running instance
 3. Inspect test data in browser dev tools

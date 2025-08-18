@@ -39,9 +39,9 @@ export class TestEnvironment {
       port: 2583,
     });
 
-    // Mock PDS instance B  
+    // Mock PDS instance B
     this.pdsInstances.set("pds-b", {
-      url: "http://localhost:2584", 
+      url: "http://localhost:2584",
       did: "did:plc:test-pds-b",
       port: 2584,
     });
@@ -98,13 +98,22 @@ export class TestEnvironment {
    */
   async createTestData(account: TestAccount): Promise<void> {
     console.log(`Creating test data for ${account.handle} on ${account.did}`);
-    
+
     try {
       // Create test posts
       const posts = [
-        { text: "Hello from test environment! This is my first post.", createdAt: new Date().toISOString() },
-        { text: "Testing migration functionality with AT Protocol 🚀", createdAt: new Date(Date.now() - 3600000).toISOString() },
-        { text: "Airport makes migration between PDS instances seamless", createdAt: new Date(Date.now() - 7200000).toISOString() },
+        {
+          text: "Hello from test environment! This is my first post.",
+          createdAt: new Date().toISOString(),
+        },
+        {
+          text: "Testing migration functionality with AT Protocol 🚀",
+          createdAt: new Date(Date.now() - 3600000).toISOString(),
+        },
+        {
+          text: "Airport makes migration between PDS instances seamless",
+          createdAt: new Date(Date.now() - 7200000).toISOString(),
+        },
       ];
 
       for (const post of posts) {
@@ -181,30 +190,36 @@ export class TestEnvironment {
       // 1. Verify posts/repository data
       try {
         console.log("Checking repository data...");
-        
+
         // Get posts from both accounts
-        const sourceRepo = await sourceAccount.agent.com.atproto.repo.listRecords({
-          repo: sourceAccount.did,
-          collection: "app.bsky.feed.post",
-        });
-        
-        const targetRepo = await targetAccount.agent.com.atproto.repo.listRecords({
-          repo: targetAccount.did,
-          collection: "app.bsky.feed.post",
-        });
+        const sourceRepo = await sourceAccount.agent.com.atproto.repo
+          .listRecords({
+            repo: sourceAccount.did,
+            collection: "app.bsky.feed.post",
+          });
+
+        const targetRepo = await targetAccount.agent.com.atproto.repo
+          .listRecords({
+            repo: targetAccount.did,
+            collection: "app.bsky.feed.post",
+          });
 
         if (sourceRepo.data.records.length !== targetRepo.data.records.length) {
-          issues.push(`Post count mismatch: source=${sourceRepo.data.records.length}, target=${targetRepo.data.records.length}`);
+          issues.push(
+            `Post count mismatch: source=${sourceRepo.data.records.length}, target=${targetRepo.data.records.length}`,
+          );
           allMatch = false;
         } else {
-          console.log(`✓ Post count matches: ${sourceRepo.data.records.length} posts`);
+          console.log(
+            `✓ Post count matches: ${sourceRepo.data.records.length} posts`,
+          );
         }
 
         // Verify post content
         for (let i = 0; i < sourceRepo.data.records.length; i++) {
           const sourcePost = sourceRepo.data.records[i];
           const targetPost = targetRepo.data.records[i];
-          
+
           if (sourcePost.value.text !== targetPost.value.text) {
             issues.push(`Post ${i} text mismatch`);
             allMatch = false;
@@ -223,30 +238,41 @@ export class TestEnvironment {
       // 2. Verify profile information
       try {
         console.log("Checking profile data...");
-        
-        const sourceProfile = await sourceAccount.agent.com.atproto.repo.getRecord({
-          repo: sourceAccount.did,
-          collection: "app.bsky.actor.profile",
-          rkey: "self",
-        });
-        
-        const targetProfile = await targetAccount.agent.com.atproto.repo.getRecord({
-          repo: targetAccount.did,
-          collection: "app.bsky.actor.profile", 
-          rkey: "self",
-        });
 
-        if (sourceProfile.data.value.displayName !== targetProfile.data.value.displayName) {
+        const sourceProfile = await sourceAccount.agent.com.atproto.repo
+          .getRecord({
+            repo: sourceAccount.did,
+            collection: "app.bsky.actor.profile",
+            rkey: "self",
+          });
+
+        const targetProfile = await targetAccount.agent.com.atproto.repo
+          .getRecord({
+            repo: targetAccount.did,
+            collection: "app.bsky.actor.profile",
+            rkey: "self",
+          });
+
+        if (
+          sourceProfile.data.value.displayName !==
+            targetProfile.data.value.displayName
+        ) {
           issues.push("Profile display name mismatch");
           allMatch = false;
         }
 
-        if (sourceProfile.data.value.description !== targetProfile.data.value.description) {
+        if (
+          sourceProfile.data.value.description !==
+            targetProfile.data.value.description
+        ) {
           issues.push("Profile description mismatch");
           allMatch = false;
         }
 
-        if (issues.length === 0 || issues.filter(i => i.includes("Profile")).length === 0) {
+        if (
+          issues.length === 0 ||
+          issues.filter((i) => i.includes("Profile")).length === 0
+        ) {
           console.log("✓ Profile data migrated correctly");
         }
       } catch (error) {
@@ -258,7 +284,7 @@ export class TestEnvironment {
       // 3. Verify account state and preferences
       try {
         console.log("Checking account preferences...");
-        
+
         // Both accounts should have proper DID and handle
         if (!targetAccount.did || !targetAccount.handle) {
           issues.push("Target account missing DID or handle");
@@ -278,11 +304,13 @@ export class TestEnvironment {
 
       // Report results
       if (allMatch) {
-        console.log("✅ Data integrity verification passed - all data migrated correctly");
+        console.log(
+          "✅ Data integrity verification passed - all data migrated correctly",
+        );
         return true;
       } else {
         console.error("❌ Data integrity verification failed:");
-        issues.forEach(issue => console.error(`  - ${issue}`));
+        issues.forEach((issue) => console.error(`  - ${issue}`));
         return false;
       }
     } catch (error) {
@@ -324,7 +352,7 @@ export async function waitFor(
 export function generateTestData() {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(7);
-  
+
   return {
     handle: `testuser-${random}`,
     email: `test-${random}@example.com`,
