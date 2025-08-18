@@ -1,0 +1,49 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: 2.x
+
+      - name: Run tests before deploy
+        run: |
+          deno fmt --check
+          deno lint
+          deno check **/*.ts **/*.tsx
+          deno task test
+
+      - name: Build for production
+        run: deno task build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build
+        run: |
+          if [ -d "_fresh" ]; then
+            echo "✅ Production build completed"
+          else
+            echo "❌ Production build failed"
+            exit 1
+          fi
+
+      # Add your deployment steps here
+      # For example, deploy to Deno Deploy, Vercel, or your hosting platform
+      # - name: Deploy to production
+      #   run: echo "Add your deployment commands here"

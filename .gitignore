@@ -11,3 +11,9 @@
 _fresh/
 # npm dependencies
 node_modules/
+
+# Test artifacts
+tests/coverage/
+tests/reports/
+tests/tmp/
+*.test.log
