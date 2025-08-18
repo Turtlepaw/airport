@@ -1,0 +1,120 @@
+name: E2E Tests
+
+on:
+  schedule:
+    # Run E2E tests daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      airport_url:
+        description: 'Airport instance URL to test against'
+        required: false
+        default: 'http://localhost:8000'
+      log_level:
+        description: 'Test log level'
+        required: false
+        default: 'info'
+        type: choice
+        options:
+        - error
+        - warn
+        - info
+        - debug
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        test-suite:
+          - basic
+          - migration-logic
+          - migration-full
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: 1.x
+
+    - name: Start Airport application
+      run: |
+        deno task dev &
+        APP_PID=$!
+        echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+        # Wait for app to start
+        sleep 10
+        
+        # Check if app is running
+        if ! curl -f http://localhost:8000 >/dev/null 2>&1; then
+          echo "❌ Airport application failed to start"
+          exit 1
+        fi
+        echo "✅ Airport application started successfully"
+
+    - name: Run E2E tests - Basic
+      if: matrix.test-suite == 'basic'
+      run: deno test --allow-net tests/e2e/basic.test.ts
+      env:
+        AIRPORT_URL: ${{ github.event.inputs.airport_url || 'http://localhost:8000' }}
+        TEST_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
+        CI: true
+
+    - name: Run E2E tests - Migration Logic
+      if: matrix.test-suite == 'migration-logic'
+      run: deno test --allow-net tests/e2e/migration-logic.test.ts
+      env:
+        AIRPORT_URL: ${{ github.event.inputs.airport_url || 'http://localhost:8000' }}
+        TEST_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
+        CI: true
+
+    - name: Run E2E tests - Full Migration
+      if: matrix.test-suite == 'migration-full'
+      run: deno test --allow-net tests/e2e/migration.test.ts
+      env:
+        AIRPORT_URL: ${{ github.event.inputs.airport_url || 'http://localhost:8000' }}
+        TEST_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
+        CI: true
+
+    - name: Stop Airport application
+      if: always()
+      run: |
+        if [ ! -z "$APP_PID" ]; then
+          kill $APP_PID || true
+        fi
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: e2e-test-results-${{ matrix.test-suite }}
+        path: |
+          test-results.json
+          *.log
+        if-no-files-found: ignore
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: always()
+
+    steps:
+    - name: Test Summary
+      run: |
+        echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "- Basic API tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Migration logic tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY  
+        echo "- Full migration tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
+          echo "✅ All E2E tests passed!" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some E2E tests failed. Check the logs above." >> $GITHUB_STEP_SUMMARY
+        fi

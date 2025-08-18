@@ -55,7 +55,7 @@ deno task test
 Tests can be configured via environment variables:
 
 - `AIRPORT_URL` - URL of the Airport application (default: http://localhost:8000)
-- `USE_REAL_INSTANCE` - Whether to test against a real Airport instance (default: false)
+- `USE_REAL_INSTANCE` - Whether to test against a real AT Protocol PDS instance (default: false)
 - `SKIP_CLEANUP` - Skip test cleanup for debugging (default: false)
 - `TEST_LOG_LEVEL` - Logging level: error, warn, info, debug (default: info)
 
@@ -75,7 +75,7 @@ AIRPORT_URL=http://localhost:3000 TEST_LOG_LEVEL=debug deno task test:e2e
 
 ### 2. Complete Migration Flow Tests
 
-- Sets up virtual PDS instances (mock)
+- Sets up virtual PDS instances (mock) with emulated PLC directory
 - Creates test accounts with sample data
 - Executes full migration: PDS A → PDS B
 - Verifies data integrity at each step
