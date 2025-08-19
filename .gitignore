@@ -17,3 +17,8 @@ tests/coverage/
 tests/reports/
 tests/tmp/
 *.test.log
+
+# Nix
+result
+result-*
+.direnv/
