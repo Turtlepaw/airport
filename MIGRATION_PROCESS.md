@@ -2,9 +2,15 @@
 
 ## Overview
 
-Airport is a comprehensive web application that facilitates seamless migration of user data and identity between AT Protocol Personal Data Servers (PDS). Built with Fresh (Deno) and TypeScript, it provides a user-friendly interface for safely transferring complete Bluesky accounts while preserving data integrity and maintaining decentralized identity.
+Airport is a comprehensive web application that facilitates seamless migration
+of user data and identity between AT Protocol Personal Data Servers (PDS). Built
+with Fresh (Deno) and TypeScript, it provides a user-friendly interface for
+safely transferring complete Bluesky accounts while preserving data integrity
+and maintaining decentralized identity.
 
-The system handles the complex multi-step process of migrating posts, media files, preferences, and most importantly, the decentralized identity (DID) that makes AT Protocol truly portable.
+The system handles the complex multi-step process of migrating posts, media
+files, preferences, and most importantly, the decentralized identity (DID) that
+makes AT Protocol truly portable.
 
 ## Architecture
 
@@ -18,24 +24,28 @@ The system handles the complex multi-step process of migrating posts, media file
 ## Migration Process Flow
 
 ### Phase 1: Authentication & Setup
+
 1. **User Login** - OAuth authentication with source PDS
 2. **Migration Setup** - Configure target PDS details
 3. **Account Creation** - Create account on target PDS with same DID
 4. **Session Management** - Maintain dual sessions (source + target)
 
 ### Phase 2: Data Migration
+
 5. **Repository Migration** - Transfer all posts, likes, follows, blocks
 6. **Blob Migration** - Transfer all media files (images, videos)
 7. **Preferences Migration** - Transfer user settings and preferences
 8. **Verification** - Ensure data integrity and completeness
 
 ### Phase 3: Identity Migration
+
 9. **PLC Operation Request** - Request identity migration via email
 10. **Identity Signing** - Sign PLC operation with email token
 11. **DID Update** - Submit signed operation to PLC directory
 12. **Account Activation** - Activate new account, deactivate old
 
 ### Phase 4: Finalization
+
 13. **Final Verification** - Confirm migration success
 14. **Cleanup** - Provide recovery keys and completion status
 
@@ -44,19 +54,25 @@ The system handles the complex multi-step process of migrating posts, media file
 ### Authentication Endpoints
 
 #### `POST /api/oauth/initiate`
+
 Initiates OAuth flow with source PDS.
+
 - **Input**: `{ handle: string }` (handle or service URL)
 - **Output**: `{ redirectUrl: string }`
 - **Purpose**: Start authentication with user's current PDS
 
 #### `GET /api/oauth/callback`
+
 Handles OAuth callback and creates session.
+
 - **Input**: OAuth callback parameters (`code`, `state`, `iss`)
 - **Output**: Redirect to `/login/callback`
 - **Purpose**: Complete OAuth flow and establish user session
 
 #### `GET /api/logout`
+
 Clears user session and redirects.
+
 - **Input**: None
 - **Output**: Redirect to home page
 - **Purpose**: End user session
@@ -64,8 +80,10 @@ Clears user session and redirects.
 ### Migration Setup Endpoints
 
 #### `POST /api/migrate/create`
+
 Creates new account on target PDS with same DID.
-- **Input**: 
+
+- **Input**:
   ```json
   {
     "service": "https://target-pds.com",
@@ -75,7 +93,7 @@ Creates new account on target PDS with same DID.
     "invite": "optional-invite-code"
   }
   ```
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -94,9 +112,11 @@ Creates new account on target PDS with same DID.
 ### Migration Status Endpoints
 
 #### `GET /api/migrate/status?step=X`
+
 Checks migration progress for specific step.
+
 - **Input**: `step` parameter (1-4)
-- **Output**: 
+- **Output**:
   ```json
   {
     "activated": boolean,
@@ -113,9 +133,11 @@ Checks migration progress for specific step.
   - `com.atproto.server.checkAccountStatus()` - Check both accounts
 
 #### `GET /api/migrate/next-step`
+
 Determines the next step in migration process.
+
 - **Input**: None
-- **Output**: 
+- **Output**:
   ```json
   {
     "nextStep": number | null,
@@ -128,9 +150,11 @@ Determines the next step in migration process.
 ### Data Migration Endpoints
 
 #### `POST /api/migrate/data/repo`
+
 Migrates repository data (posts, follows, blocks, etc.).
+
 - **Input**: None (uses session context)
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -149,9 +173,11 @@ Migrates repository data (posts, follows, blocks, etc.).
   - `com.atproto.repo.importRepo()` - Import repository to target
 
 #### `POST /api/migrate/data/blobs`
+
 Migrates all blob data (images, videos, files).
+
 - **Input**: None (uses session context)
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -170,9 +196,11 @@ Migrates all blob data (images, videos, files).
   - `com.atproto.repo.uploadBlob()` - Upload to target account
 
 #### `POST /api/migrate/data/prefs`
+
 Migrates user preferences and settings.
+
 - **Input**: None (uses session context)
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -193,9 +221,11 @@ Migrates user preferences and settings.
 ### Identity Migration Endpoints
 
 #### `POST /api/migrate/identity/request`
+
 Requests PLC operation signature via email.
+
 - **Input**: None (uses session context)
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -207,9 +237,11 @@ Requests PLC operation signature via email.
   - `com.atproto.identity.requestPlcOperationSignature()` - Request email token
 
 #### `POST /api/migrate/identity/sign?token=EMAIL_TOKEN`
+
 Signs and submits PLC operation for identity migration.
+
 - **Input**: `token` URL parameter from email
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -219,16 +251,19 @@ Signs and submits PLC operation for identity migration.
   ```
 - **Purpose**: Complete identity migration with email verification
 - **AT Protocol Methods**:
-  - `com.atproto.identity.getRecommendedDidCredentials()` - Get target credentials
+  - `com.atproto.identity.getRecommendedDidCredentials()` - Get target
+    credentials
   - `com.atproto.identity.signPlcOperation()` - Sign operation with token
   - `com.atproto.identity.submitPlcOperation()` - Submit to PLC directory
 
 ### Migration Finalization Endpoints
 
 #### `POST /api/migrate/finalize`
+
 Finalizes migration by activating new account and deactivating old.
+
 - **Input**: None (uses session context)
-- **Output**: 
+- **Output**:
   ```json
   {
     "success": true,
@@ -243,18 +278,23 @@ Finalizes migration by activating new account and deactivating old.
 ### Utility Endpoints
 
 #### `GET /api/me`
+
 Returns current user session information.
+
 - **Output**: Session data or 401 if not authenticated
 
 #### `GET /api/migration-state`
+
 Returns current migration state and configuration.
 
 #### `POST /api/resolve-pds`
+
 Resolves PDS URL from handle or service identifier.
 
 ## Authentication & Security
 
 ### OAuth Flow
+
 1. **Initiate**: User provides handle, system discovers their PDS
 2. **Authorize**: User is redirected to their PDS for authorization
 3. **Callback**: PDS redirects back with authorization code
@@ -262,12 +302,14 @@ Resolves PDS URL from handle or service identifier.
 5. **Session**: Encrypted session cookie stores authentication state
 
 ### Session Management
+
 - **Dual Sessions**: Maintains separate sessions for source and target PDS
 - **Encryption**: All session data encrypted with Deno KV
 - **Validation**: Continuous DID validation ensures session integrity
 - **Expiration**: Sessions have configurable timeouts
 
 ### Security Measures
+
 - **DID Verification**: Ensures source and target DIDs match throughout process
 - **Migration State**: Prevents unauthorized access to migration endpoints
 - **Token Validation**: Email tokens required for identity operations
@@ -276,11 +318,13 @@ Resolves PDS URL from handle or service identifier.
 ## Data Migration Deep Dive
 
 ### Repository Migration
+
 Repository migration transfers the complete user data graph:
 
 **Data Types Migrated**:
+
 - Posts (`app.bsky.feed.post`)
-- Likes (`app.bsky.feed.like`) 
+- Likes (`app.bsky.feed.like`)
 - Reposts (`app.bsky.feed.repost`)
 - Follows (`app.bsky.graph.follow`)
 - Blocks (`app.bsky.graph.block`)
@@ -288,15 +332,20 @@ Repository migration transfers the complete user data graph:
 - Profile data (`app.bsky.actor.profile`)
 
 **Process**:
-1. **Export**: Use `com.atproto.sync.getRepo()` to get complete repository as CAR file
+
+1. **Export**: Use `com.atproto.sync.getRepo()` to get complete repository as
+   CAR file
 2. **Validation**: Verify data integrity and completeness
-3. **Import**: Use `com.atproto.repo.importRepo()` to recreate repository structure
+3. **Import**: Use `com.atproto.repo.importRepo()` to recreate repository
+   structure
 4. **Verification**: Compare record counts and commit hashes
 
 ### Blob Migration
+
 Blob migration handles all binary data with sophisticated error handling:
 
 **Features**:
+
 - **Chunked Processing**: Handles large datasets efficiently
 - **Size Validation**: Enforces 200MB per-blob limits
 - **Progress Tracking**: Real-time progress updates
@@ -304,13 +353,16 @@ Blob migration handles all binary data with sophisticated error handling:
 - **Deduplication**: Avoids re-uploading existing blobs
 
 **Process**:
+
 1. **Discovery**: List all blobs using `com.atproto.sync.listBlobs()`
 2. **Download**: Fetch each blob with `com.atproto.sync.getBlob()`
 3. **Upload**: Store in target with `com.atproto.repo.uploadBlob()`
 4. **Verification**: Confirm successful transfer
 
 ### Preferences Migration
+
 Preserves user experience by transferring:
+
 - Content filters and labels
 - Language preferences
 - Notification settings
@@ -320,9 +372,13 @@ Preserves user experience by transferring:
 ## Identity Migration (PLC Operations)
 
 ### PLC (Public Ledger of Credentials)
-The PLC is a centralized directory that maps DIDs to their current service endpoints and cryptographic keys. Identity migration requires updating this mapping.
+
+The PLC is a centralized directory that maps DIDs to their current service
+endpoints and cryptographic keys. Identity migration requires updating this
+mapping.
 
 ### Migration Process
+
 1. **Credential Generation**: Create new recovery key for enhanced security
 2. **Operation Preparation**: Gather target PDS credentials and rotation keys
 3. **Email Verification**: Send signed operation request to user's email
@@ -331,6 +387,7 @@ The PLC is a centralized directory that maps DIDs to their current service endpo
 6. **Propagation**: Wait for network propagation of new DID document
 
 ### Recovery Key
+
 - **Generation**: Creates new Secp256k1 keypair for account recovery
 - **Storage**: Private key returned to user for safekeeping
 - **Purpose**: Enables future account recovery without email access
@@ -338,6 +395,7 @@ The PLC is a centralized directory that maps DIDs to their current service endpo
 ## Error Handling & Recovery
 
 ### Validation Layers
+
 1. **Input Validation**: Parameter and format checking
 2. **Authentication**: Session and permission verification
 3. **State Validation**: Migration step prerequisites
@@ -345,15 +403,18 @@ The PLC is a centralized directory that maps DIDs to their current service endpo
 5. **Data Integrity**: Record counts and hash verification
 
 ### Recovery Mechanisms
+
 - **Step Rollback**: Ability to retry failed migration steps
 - **Partial Completion**: Continue from last successful step
 - **Error Logging**: Detailed logs for troubleshooting
 - **Manual Intervention**: Support for complex edge cases
 
 ### Migration State Management
+
 The system tracks migration progress through distinct states:
+
 - `CREATED`: Target account created
-- `DATA_MIGRATED`: Repository and blobs transferred  
+- `DATA_MIGRATED`: Repository and blobs transferred
 - `IDENTITY_REQUESTED`: PLC operation requested
 - `IDENTITY_MIGRATED`: DID document updated
 - `FINALIZED`: Migration completed
@@ -361,12 +422,14 @@ The system tracks migration progress through distinct states:
 ## Testing & Quality Assurance
 
 ### Test Suite Structure
+
 - **Unit Tests**: Core migration logic with mocks
 - **E2E Tests**: Full migration scenarios
 - **Mock Mode**: Testing without live PDS connections
 - **CI Integration**: Automated testing on all commits
 
 ### Test Coverage
+
 - Migration step validation
 - Data integrity verification
 - Error handling scenarios
@@ -376,11 +439,13 @@ The system tracks migration progress through distinct states:
 ## Deployment & CI/CD
 
 ### GitHub Actions Workflows
+
 1. **CI Pipeline** (`ci.yml`): Code quality and testing
 2. **Deploy Pipeline** (`deploy.yml`): Production deployment
 3. **E2E Pipeline** (`e2e.yml`): Comprehensive integration testing
 
 ### Quality Gates
+
 - Code formatting (`deno fmt`)
 - Linting (`deno lint`)
 - Type checking (`deno check`)
@@ -390,6 +455,7 @@ The system tracks migration progress through distinct states:
 ## Configuration & Environment
 
 ### Required Environment Variables
+
 - `OAUTH_CLIENT_ID`: AT Protocol OAuth client identifier
 - `OAUTH_CLIENT_SECRET`: OAuth client secret
 - `OAUTH_REDIRECT_URL`: Callback URL for OAuth flow
@@ -397,6 +463,7 @@ The system tracks migration progress through distinct states:
 - `PLC_DIRECTORY_URL`: PLC directory endpoint
 
 ### Feature Flags
+
 - Migration rate limiting
 - Debug logging levels
 - Test mode activation
@@ -405,12 +472,14 @@ The system tracks migration progress through distinct states:
 ## Monitoring & Analytics
 
 ### Metrics Tracking
+
 - Migration success rates
 - Step completion times
 - Error frequencies
 - User drop-off points
 
 ### Logging
+
 - Structured JSON logs
 - Request/response tracking
 - Performance metrics
@@ -419,6 +488,7 @@ The system tracks migration progress through distinct states:
 ## Future Enhancements
 
 ### Planned Features
+
 - Batch migrations for multiple accounts
 - Migration scheduling and automation
 - Advanced data filtering options
@@ -426,6 +496,7 @@ The system tracks migration progress through distinct states:
 - Enhanced analytics dashboard
 
 ### Technical Improvements
+
 - Migration queue management
 - Distributed processing
 - Enhanced error recovery
@@ -434,6 +505,12 @@ The system tracks migration progress through distinct states:
 
 ## Conclusion
 
-Airport represents a sophisticated solution for AT Protocol data portability, handling the complex technical requirements of decentralized identity migration while providing a user-friendly interface. The system's modular design, comprehensive error handling, and thorough testing ensure reliable migrations that preserve both data integrity and user experience.
+Airport represents a sophisticated solution for AT Protocol data portability,
+handling the complex technical requirements of decentralized identity migration
+while providing a user-friendly interface. The system's modular design,
+comprehensive error handling, and thorough testing ensure reliable migrations
+that preserve both data integrity and user experience.
 
-The implementation demonstrates best practices for AT Protocol development, including proper OAuth integration, PLC operations, and data synchronization across distributed systems.
+The implementation demonstrates best practices for AT Protocol development,
+including proper OAuth integration, PLC operations, and data synchronization
+across distributed systems.

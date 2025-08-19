@@ -22,8 +22,22 @@ for managing your AT Protocol data.
 
 ## Development
 
-Make sure you have Deno installed:
-https://docs.deno.com/runtime/getting_started/installation
+### Using Nix (Recommended)
+
+If you have [Nix](https://nixos.org/download) with flakes enabled, you can set
+up the development environment automatically:
+
+```shell
+# Enter the development environment
+nix develop
+```
+
+### Manual Setup
+
+Alternatively, make sure you have Deno installed:
+[Deno Installation Guide](https://docs.deno.com/runtime/getting_started/installation)
+
+### Starting Development
 
 Start the project in development mode:
 
