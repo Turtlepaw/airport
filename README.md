@@ -1,61 +1,77 @@
 # Airport
 
-Your terminal for seamless AT Protocol PDS (Personal Data Server) migration and
-backup.
+Your terminal for seamless AT Protocol PDS (Personal Data Server) migration and backup.
 
-Airport is a web application built with Fresh and Deno that helps users safely
-migrate and backup their Bluesky PDS data. It provides a user-friendly interface
-for managing your AT Protocol data.
+Airport is a web application built with Fresh and Deno that helps users safely migrate and backup their Bluesky PDS data. It provides a user-friendly interface for managing your AT Protocol data.
 
 ## Features
 
-- PDS migration between servers
-- Data backup functionality
-- User-friendly interface
-- Coming soon: PLC Key retrieval, data backup
+- **PDS Migration** - Seamlessly migrate between AT Protocol servers
+- **Data Backup** - Backup your Bluesky data safely
+- **User-Friendly Interface** - Simple, intuitive migration process
+- **OAuth Integration** - Secure authentication flow
+- **Migration Progress Tracking** - Real-time status updates
 
-## Tech Stack
+## Quick Start
 
-- [Fresh](https://fresh.deno.dev/) - Web Framework
-- [Deno](https://deno.com/) - Runtime
-- [Tailwind](https://tailwindcss.com/) - Styling
+### Prerequisites
 
-## Development
+- [Deno 2.4+](https://docs.deno.com/runtime/getting_started/installation)
+- [Node.js 18+](https://nodejs.org/) (for native dependencies)
 
-### Using Nix (Recommended)
+### Development Setup
 
-If you have [Nix](https://nixos.org/download) with flakes enabled, you can set
-up the development environment automatically:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Turtlepaw/airport.git
+   cd airport
+   ```
 
-```shell
-# Enter the development environment
-nix develop
-```
+2. **Install dependencies**
+   ```bash
+   deno install --allow-scripts
+   ```
 
-### Manual Setup
+3. **Start development server**
+   ```bash
+   deno task dev
+   ```
 
-Alternatively, make sure you have Deno installed:
-[Deno Installation Guide](https://docs.deno.com/runtime/getting_started/installation)
+Visit `http://localhost:8000` to see Airport in action!
 
-### Starting Development
+## Using Nix (Alternative)
 
-Start the project in development mode:
+If you have [Nix](https://nixos.org/download) with flakes enabled:
 
-```shell
+```bash
+nix develop  # Sets up the complete development environment
 deno task dev
 ```
 
-## About
+## Tech Stack
 
-Airport is developed with ❤️ by [Roscoe](https://bsky.app/profile/knotbin.com)
-for [Spark](https://sprk.so), a new short-video platform for AT Protocol.
+- **[Fresh](https://fresh.deno.dev/)** - Modern web framework for Deno
+- **[Deno](https://deno.com/)** - Secure runtime for JavaScript and TypeScript  
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[AT Protocol](https://atproto.com/)** - Decentralized social networking protocol
 
 ## Contributing
 
-We welcome contributions! Please feel free to submit a Pull Request. Please only
-submit pull requests that are relevant to the project. This project targets
-people with a non-advanced understanding of AT Protocol, so please avoid
-submitting pull requests that add features that complicate the user experience.
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for detailed setup instructions, development guidelines, and how to submit pull requests.
+
+**Quick contribution setup:**
+```bash
+git clone https://github.com/YOUR_USERNAME/airport.git
+cd airport
+deno install --allow-scripts
+deno task dev
+```
+
+Please ensure contributions align with our goal of keeping Airport accessible to users with non-advanced AT Protocol knowledge.
+
+## About
+
+Airport is developed with ❤️ by [Roscoe](https://bsky.app/profile/knotbin.com) for [Spark](https://sprk.so), a new short-video platform for AT Protocol.
 
 ## License
 

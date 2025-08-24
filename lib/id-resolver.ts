@@ -25,7 +25,9 @@ export const resolver = createBidirectionalResolver(idResolver);
  * @returns The ID resolver
  */
 export function createIdResolver() {
-  return new IdResolver();
+  const plcUrl = Deno.env.get("PLC_DIRECTORY") || undefined;
+  console.log("Using PLC URL:", plcUrl);
+  return new IdResolver({ plcUrl });
 }
 
 /**

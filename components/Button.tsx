@@ -1,4 +1,5 @@
 import { JSX } from "preact";
+import clsx from "clsx";
 
 type ButtonBaseProps = {
   color?: "blue" | "amber";
@@ -74,9 +75,13 @@ export function Button(props: Props) {
     </>
   );
 
-  const buttonStyles = `${baseStyles} ${paddingStyles} ${transformStyles} ${
-    colorStyles[color]
-  } ${className}`;
+  const buttonStyles = clsx(
+    baseStyles,
+    paddingStyles,
+    transformStyles,
+    colorStyles[color],
+    className,
+  );
 
   if (isAnchor) {
     return (
