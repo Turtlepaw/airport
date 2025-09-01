@@ -1,3 +1,4 @@
+@import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
@@ -14,10 +15,6 @@
   font-weight: normal;
   font-style: normal;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @keyframes fadeOut {
   0% {

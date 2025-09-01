@@ -44,7 +44,7 @@ export function Button(props: Props) {
   const baseStyles = "airport-sign flex items-center [transition:none]";
   const paddingStyles = condensed ? "px-2 py-1.5" : "px-3 py-2 sm:px-6 sm:py-3";
   const transformStyles =
-    "translate-y-0 hover:translate-y-1 hover:transition-transform hover:duration-200 hover:ease-in-out";
+    "translate-y-0 hover:translate-y-1 transition-transform duration-200 ease-in-out";
   const colorStyles = {
     blue:
       "bg-gradient-to-r from-blue-400 to-blue-500 text-white hover:from-blue-500 hover:to-blue-600",

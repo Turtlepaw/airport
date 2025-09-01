@@ -1,6 +1,6 @@
 /// <reference lib="deno.unstable" />
 
-import { App, fsRoutes, staticFiles } from "fresh";
+import { App, staticFiles } from "fresh";
 import { define, type State } from "./utils.ts";
 import { getSession } from "./lib/sessions.ts";
 
@@ -40,13 +40,6 @@ const authMiddleware = define.middleware(async (ctx) => {
     return ctx.redirect("/login");
   }
 });
+
 app.use(authMiddleware);
-
-await fsRoutes(app, {
-  loadIsland: (path) => import(`./islands/${path}`),
-  loadRoute: (path) => import(`./routes/${path}`),
-});
-
-if (import.meta.main) {
-  await app.listen();
-}
+app.fsRoutes();
